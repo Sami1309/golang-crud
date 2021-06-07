@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -49,9 +49,9 @@ func CreateBook(c *gin.Context) {
 		return
 	}
 
+	_, date_err := time.Parse("2006-01-02", newBook.PublishDate)
 	//validate book input here to abide by formatting, or perhaps way to do it in database?
-	valid_book := len(strings.Split(newBook.PublishDate, "-")) == 3 &&
-		(newBook.Rating >= 1 && newBook.Rating <= 3)
+	valid_book := date_err == nil && (newBook.Rating >= 1 && newBook.Rating <= 3)
 
 	if valid_book == false {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid input."})
@@ -110,10 +110,30 @@ func UpdateBook(c *gin.Context) {
 
 	invalid_request := c.ShouldBindJSON(&updateBook)
 
-	//checkbookinput(newBook) //Ensures input follows proper formatting/data types
+	//validate book input here to abide by formatting, or perhaps way to do it in database?
 
 	if invalid_request != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": invalid_request.Error()})
+		return
+	}
+
+	valid_book := true
+	if updateBook.PublishDate != "" {
+		_, date_err := time.Parse("2006-01-02", updateBook.PublishDate)
+		valid_book = valid_book && date_err == nil
+	}
+
+	fmt.Println(c.Value("rating"))
+
+	valid_book = valid_book && (updateBook.Rating >= 1 && updateBook.Rating <= 3)
+
+	if updateBook.Rating == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Must specify rating"})
+		return
+	}
+
+	if !valid_book {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Bad request."})
 		return
 	}
 
