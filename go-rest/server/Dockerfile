@@ -1,4 +1,4 @@
-FROM golang:latest AS GO_BUILD
+FROM golang:1.16
 LABEL maintainer="sam <sinloes@gmail.com>"
 WORKDIR /app
 
