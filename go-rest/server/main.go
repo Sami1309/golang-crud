@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"go-crud-app/middleware"
 	"go-crud-app/router"
+	"os"
 )
 
 func main() {
@@ -13,5 +15,9 @@ func main() {
 	middleware.ConnectDB()
 
 	//Run server listening on port 8080
-	r.Run(":8080")
+
+	//os.Setenv("PORT", "8080")
+
+	myport := fmt.Sprintf(":%s", os.Getenv("PORT"))
+	r.Run(myport)
 }
